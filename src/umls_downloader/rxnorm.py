@@ -2,6 +2,8 @@
 
 """Download RxNorm content through the UMLS Terminology Services."""
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Optional
 

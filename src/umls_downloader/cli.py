@@ -13,6 +13,8 @@ later, but that will cause problems--the code will get executed twice:
 .. seealso:: https://click.palletsprojects.com/en/7.x/setuptools/#setuptools-integration
 """
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
 from typing import Optional
