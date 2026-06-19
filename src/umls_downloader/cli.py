@@ -1,21 +1,23 @@
-# -*- coding: utf-8 -*-
-
 """Command line interface for :mod:`umls_downloader`.
 
-Why does this file exist, and why not put this in ``__main__``? You might be tempted to import things from ``__main__``
-later, but that will cause problems--the code will get executed twice:
+Why does this file exist, and why not put this in ``__main__``? You might be tempted to
+import things from ``__main__`` later, but that will cause problems--the code will get
+executed twice:
 
-- When you run ``python3 -m umls_downloader`` python will execute``__main__.py`` as a script.
-  That means there won't be any ``umls_downloader.__main__`` in ``sys.modules``.
-- When you import __main__ it will get executed again (as a module) because
-  there's no ``umls_downloader.__main__`` in ``sys.modules``.
+- When you run ``python3 -m umls_downloader`` python will execute``__main__.py`` as a
+  script. That means there won't be any ``umls_downloader.__main__`` in ``sys.modules``.
+- When you import __main__ it will get executed again (as a module) because there's no
+  ``umls_downloader.__main__`` in ``sys.modules``.
 
-.. seealso:: https://click.palletsprojects.com/en/7.x/setuptools/#setuptools-integration
+.. seealso::
+
+    https://click.palletsprojects.com/en/7.x/setuptools/#setuptools-integration
 """
+
+from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 import click
 from more_click import force_option, verbose_option
@@ -44,7 +46,7 @@ version_option = click.option(
 
 
 @click.group()
-def main():
+def main() -> None:
     """Download files from the UMLS Terminology Service."""
 
 
@@ -58,7 +60,7 @@ def main():
     required=True,
 )
 @click.option("-o", "--output", help="The local file path to download a file to", required=True)
-def custom(url: str, output: str, api_key: Optional[str], force: bool):
+def custom(url: str, output: str, api_key: str | None, force: bool) -> None:
     """Download a file via a custom URL."""
     path = Path(output).expanduser().resolve()
     download_tgt(url=url, path=path, api_key=api_key, force=force)
@@ -70,7 +72,7 @@ def custom(url: str, output: str, api_key: Optional[str], force: bool):
 @version_option
 @force_option
 @api_option
-def umls(version: Optional[str], force: bool, api_key: Optional[str]):
+def umls(version: str | None, force: bool, api_key: str | None) -> None:
     """Download the UMLS data and print the path to stdout."""
     path = download_umls(api_key=api_key, force=force, version=version)
     click.secho(str(path))
@@ -81,7 +83,7 @@ def umls(version: Optional[str], force: bool, api_key: Optional[str]):
 @version_option
 @force_option
 @api_option
-def rxnorm(version: Optional[str], force: bool, api_key: Optional[str]):
+def rxnorm(version: str | None, force: bool, api_key: str | None) -> None:
     """Download the RxNorm data and print the path to stdout."""
     path = download_rxnorm(api_key=api_key, force=force, version=version)
     click.secho(str(path))

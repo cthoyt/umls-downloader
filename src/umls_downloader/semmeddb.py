@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """Download functionality for SemMedDB."""
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 import pystow
 from pystow.utils import name_from_url
@@ -12,8 +12,8 @@ from .api import download_tgt
 
 __all__ = [
     "download_semmeddb_citations",
-    "download_semmeddb_entity",
     "download_semmeddb_concept",
+    "download_semmeddb_entity",
     "download_semmeddb_predication",
     "download_semmeddb_predication_aux",
     "download_semmeddb_sentence",
@@ -31,39 +31,37 @@ SEMMEDDB_PREDICATION_AUX = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_PREDICATION_AUX.
 SEMMEDDB_SENTENCE = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_SENTENCE.csv.gz"
 
 
-def download_semmeddb_citations(**kwargs) -> Path:
+def download_semmeddb_citations(**kwargs: Any) -> Path:
     """Download the SemMedDB citations file."""
     return _download_semmeddb_helper(SEMMEDDB_CITATIONS, **kwargs)
 
 
-def download_semmeddb_entity(**kwargs) -> Path:
+def download_semmeddb_entity(**kwargs: Any) -> Path:
     """Download the SemMedDB entities file."""
     return _download_semmeddb_helper(SEMMEDDB_ENTITY, **kwargs)
 
 
-def download_semmeddb_concept(**kwargs) -> Path:
+def download_semmeddb_concept(**kwargs: Any) -> Path:
     """Download the SemMedDB generic concepts file."""
     return _download_semmeddb_helper(SEMMEDDB_CONCEPT, **kwargs)
 
 
-def download_semmeddb_predication(**kwargs) -> Path:
+def download_semmeddb_predication(**kwargs: Any) -> Path:
     """Download the SemMedDB predication file."""
     return _download_semmeddb_helper(SEMMEDDB_PREDICATION, **kwargs)
 
 
-def download_semmeddb_predication_aux(**kwargs) -> Path:
+def download_semmeddb_predication_aux(**kwargs: Any) -> Path:
     """Download the SemMedDB predication (aux) file."""
     return _download_semmeddb_helper(SEMMEDDB_PREDICATION_AUX, **kwargs)
 
 
-def download_semmeddb_sentence(**kwargs) -> Path:
+def download_semmeddb_sentence(**kwargs: Any) -> Path:
     """Download the SemMedDB sentence file."""
     return _download_semmeddb_helper(SEMMEDDB_SENTENCE, **kwargs)
 
 
-def _download_semmeddb_helper(
-    url: str, *, api_key: Optional[str] = None, force: bool = False
-) -> Path:
+def _download_semmeddb_helper(url: str, *, api_key: str | None = None, force: bool = False) -> Path:
     path = MODULE.join(SEMMEDDB_VERSION, name=name_from_url(url))
     if path.is_file() and not force:
         return path
