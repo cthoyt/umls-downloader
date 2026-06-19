@@ -33,10 +33,11 @@
     -->
 </p>
 
-Don't worry about [UMLS Terminology Services (UTS)](https://uts.nlm.nih.gov/uts/)
-licensing and distribution rules - just use
-`umls_downloader` to write code that knows how to download content and use it
-automatically from the following (non-exhaustive) list of resources:
+Don't worry about
+[UMLS Terminology Services (UTS)](https://uts.nlm.nih.gov/uts/) licensing and
+distribution rules - just use `umls_downloader` to write code that knows how to
+download content and use it automatically from the following (non-exhaustive)
+list of resources:
 
 - [UMLS](https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html)
 - [RxNorm](https://www.nlm.nih.gov/research/umls/rxnorm/docs/rxnormfiles.html)
@@ -44,13 +45,14 @@ automatically from the following (non-exhaustive) list of resources:
 - [SNOMED-CT](https://www.nlm.nih.gov/healthit/snomedct/international.html)
 - potentially more in the future
 
-or any content that can be downloaded through
-the [UTS ticket granting](https://documentation.uts.nlm.nih.gov/automating-downloads.html)
+or any content that can be downloaded through the
+[UTS ticket granting](https://documentation.uts.nlm.nih.gov/automating-downloads.html)
 system. There's no centralized list of content available through the UTS so
-suggestions for additional resources are welcome through
-the [issue tracker](https://github.com/cthoyt/umls_downloader/issues).
+suggestions for additional resources are welcome through the
+[issue tracker](https://github.com/cthoyt/umls_downloader/issues).
 
-Full documentation are available at [umls-downloader.readthedocs.io](https://umls-downloader.readthedocs.io).
+Full documentation are available at
+[umls-downloader.readthedocs.io](https://umls-downloader.readthedocs.io).
 
 ## 💪 Getting Started
 
@@ -97,11 +99,11 @@ path = download_umls(version="2021AB")
 
 ### Download the Latest Version
 
-First, you'll have to
-install [`bioversions`](https://github.com/cthoyt/bioversions)
-with `pip install bioversions`, whose job it is to look up the latest version of
-many databases. Then, you can modify the previous code slightly by omitting
-the `version` keyword argument:
+First, you'll have to install
+[`bioversions`](https://github.com/cthoyt/bioversions) with
+`pip install bioversions`, whose job it is to look up the latest version of many
+databases. Then, you can modify the previous code slightly by omitting the
+`version` keyword argument:
 
 ```python
 from umls_downloader import download_umls
@@ -160,7 +162,6 @@ years) packages [`umls-api`](https://pypi.org/project/umls-api)
 around them. However, API access is generally rate limited, difficult to use in
 bulk, and slow. For working with UMLS (or any other database, for that matter)in
 bulk, it's necessary to download full database dumps.
-
 
 ## 🚀 Installation
 
