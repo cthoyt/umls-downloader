@@ -157,7 +157,7 @@ RRF_COLUMNS = [
 def open_mrconso_dict_reader(
     version: str | None = None, *, api_key: str | None = None, force: bool = False
 ) -> Generator[csv.DictReader[str], None, None]:
-    """Ensure and open the UMLS MRCONSO.RRF file from the given version.
+    """Ensure and open the UMLS MRCONSO.RRF file from the given version as a dictionary reader.
 
     :param version: The version of UMLS to ensure. If not given, is looked up with
         :mod:`bioversions`.
@@ -165,7 +165,7 @@ def open_mrconso_dict_reader(
         :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
     :param force: Should the file be re-downloaded, even if it already exists?
 
-    :yields: The file, which is used in the context manager.
+    :yields: A dictionary reader
     """
     path = download_umls(version=version, api_key=api_key, force=force)
     inner_path = _find_inner_path(path, "MRCONSO.RRF")
@@ -192,6 +192,9 @@ def open_umls(
     :param api_key: An API key. If not given, is looked up using
         :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
     :param force: Should the file be re-downloaded, even if it already exists?
+    :param representation: The representation to use, either "binary" or "text".
+        Defaults to "binary" for backwards compatibility, but is much more
+        convenient when using "text".
 
     :yields: The file, which is used in the context manager.
     """
