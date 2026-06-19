@@ -111,6 +111,30 @@ def download_umls_metathesaurus(
 
 
 @contextmanager
+def open_mrconso_dict_reader(
+    version: str | None = None, *, api_key: str | None = None, force: bool = False
+) -> Generator[csv.DictReader[str], None, None]:
+    """Ensure and open the UMLS MRCONSO.RRF file from the given version as a dictionary reader.
+
+    :param version: The version of UMLS to ensure. If not given, is looked up with
+        :mod:`bioversions`.
+    :param api_key: An API key. If not given, is looked up using
+        :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
+    :param force: Should the file be re-downloaded, even if it already exists?
+
+    :yields: A dictionary reader
+    """
+    path = download_umls(version=version, api_key=api_key, force=force)
+    inner_path = _find_inner_path(path, "MRCONSO.RRF")
+    old_limit = csv.field_size_limit(sys.maxsize)
+    with open_zip_dict_reader(
+        path, inner_path=inner_path, fieldnames=RRF_COLUMNS, delimiter="|"
+    ) as reader:
+        yield reader
+    csv.field_size_limit(old_limit)
+
+
+@contextmanager
 def open_mrconso_reader(
     version: str | None = None, *, api_key: str | None = None, force: bool = False
 ) -> Generator[Reader, None, None]:
@@ -126,8 +150,10 @@ def open_mrconso_reader(
     """
     path = download_umls(version=version, api_key=api_key, force=force)
     inner_path = _find_inner_path(path, "MRCONSO.RRF")
+    old_limit = csv.field_size_limit(sys.maxsize)
     with open_zip_reader(path, inner_path=inner_path, operation="read") as reader:
         yield reader
+    csv.field_size_limit(old_limit)
 
 
 RRF_COLUMNS = [
@@ -151,30 +177,6 @@ RRF_COLUMNS = [
     "CVF",
     "?",
 ]
-
-
-@contextmanager
-def open_mrconso_dict_reader(
-    version: str | None = None, *, api_key: str | None = None, force: bool = False
-) -> Generator[csv.DictReader[str], None, None]:
-    """Ensure and open the UMLS MRCONSO.RRF file from the given version as a dictionary reader.
-
-    :param version: The version of UMLS to ensure. If not given, is looked up with
-        :mod:`bioversions`.
-    :param api_key: An API key. If not given, is looked up using
-        :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
-    :param force: Should the file be re-downloaded, even if it already exists?
-
-    :yields: A dictionary reader
-    """
-    path = download_umls(version=version, api_key=api_key, force=force)
-    inner_path = _find_inner_path(path, "MRCONSO.RRF")
-    old_limit = csv.field_size_limit(sys.maxsize)
-    with open_zip_dict_reader(
-        path, inner_path=inner_path, fieldnames=RRF_COLUMNS, delimiter="|"
-    ) as reader:
-        yield reader
-    csv.field_size_limit(old_limit)
 
 
 @contextmanager
