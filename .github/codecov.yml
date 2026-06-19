@@ -1,0 +1,4 @@
+# see https://docs.codecov.com/v4.6/docs/codecov-yaml
+ignore:
+  - "src/umls_downloader/__main__.py"
+  - "src/umls_downloader/cli.py"
