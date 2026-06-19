@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
 """Download functionality for the UMLS ticket granting system."""
 
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Optional, Union
 
 import bs4
 import pystow
@@ -27,9 +25,9 @@ TGT_URL = "https://utslogin.nlm.nih.gov/cas/v1/api-key"
 
 def download_tgt(
     url: str,
-    path: Union[str, Path],
+    path: str | Path,
     *,
-    api_key: Optional[str] = None,
+    api_key: str | None = None,
     force: bool = False,
 ) -> None:
     """Download a file via the UMLS ticket granting system.
@@ -48,12 +46,10 @@ def download_tgt(
     if path.is_file() and not force:
         return
 
-    api_key = pystow.get_config(
-        "umls", "api_key", passthrough=api_key, raise_on_missing=True
-    )
+    api_key = pystow.get_config("umls", "api_key", passthrough=api_key, raise_on_missing=True)
 
     # Step 1: get a link to the ticket granting system (TGT)
-    auth_res = requests.post(TGT_URL, data={"apikey": api_key})
+    auth_res = requests.post(TGT_URL, data={"apikey": api_key}, timeout=60)
     #  for some reason, this API returns HTML. This needs to be parsed,
     #  and there will be a form whose action is the next thing to POST to
     soup = bs4.BeautifulSoup(auth_res.text, features="html.parser")
@@ -63,7 +59,7 @@ def download_tgt(
     # Step 2: get a service ticket for the file you want to download
     #  by POSTing to the action URL with the name of the URL you actually
     #  want to download inside the form data
-    key_res = requests.post(action_url, data={"service": url})
+    key_res = requests.post(action_url, data={"service": url}, timeout=60)
     # luckily this one just returns the text you need
     service_ticket = key_res.text
     logger.info("[umls] got service ticket: %s", service_ticket)
@@ -80,29 +76,31 @@ def download_tgt(
 
 def download_tgt_versioned(
     url_fmt: str,
-    version: Optional[str] = None,
+    version: str | None = None,
     *,
     module_key: str,
     version_key: str,
-    api_key: Optional[str] = None,
+    api_key: str | None = None,
     force: bool = False,
-    version_transform: Optional[Callable[[str], str]] = None,
+    version_transform: Callable[[str], str] | None = None,
 ) -> Path:
     """Download a file via the UMLS ticket granting system.
 
-    :param url_fmt: The URL format of the file to download where ``{version}`` is
-        used as a placeholder (potentially multiple times), like in
+    :param url_fmt: The URL format of the file to download where ``{version}`` is used
+        as a placeholder (potentially multiple times), like in
         ``https://download.nlm.nih.gov/umls/kss/{version}/umls-{version}-mrconso.zip``
     :param version: The version of the file to download
     :param module_key: The key for the pystow submodule of "bio"
-    :param version_key: The key to look up the version via :mod:`bioversions`
-        if the ``version`` parameter is not given explicitly.
+    :param version_key: The key to look up the version via :mod:`bioversions` if the
+        ``version`` parameter is not given explicitly.
     :param api_key: An API key. If not given, is looked up using
         :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
     :param force: Should the file be re-downloaded?
     :param version_transform: A string transformation function, in case the version
         needs to be reformatted
+
     :returns: The local path to the downloaded versioned file
+
     :raises ValueError: if the URL format string doesn't have a ``{version}`` substring
     :raises RuntimeError: if no version is given and none can be looked up
     """

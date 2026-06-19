@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """Download functionality for SemMedDB."""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import pystow
 from pystow.utils import name_from_url
@@ -14,8 +11,8 @@ from .api import download_tgt
 
 __all__ = [
     "download_semmeddb_citations",
-    "download_semmeddb_entity",
     "download_semmeddb_concept",
+    "download_semmeddb_entity",
     "download_semmeddb_predication",
     "download_semmeddb_predication_aux",
     "download_semmeddb_sentence",
@@ -24,9 +21,7 @@ __all__ = [
 MODULE = pystow.module("bio", "semmeddb")
 
 SEMMEDDB_VERSION = "43"
-SEMMEDDB_BASE = (
-    "https://data.lhncbc.nlm.nih.gov/umls-restricted/ii/tools/SemRep_SemMedDB_SKR"
-)
+SEMMEDDB_BASE = "https://data.lhncbc.nlm.nih.gov/umls-restricted/ii/tools/SemRep_SemMedDB_SKR"
 SEMMEDDB_CITATIONS = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_CITATIONS.csv.gz"
 SEMMEDDB_ENTITY = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_ENTITY.csv.gz"
 SEMMEDDB_CONCEPT = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_GENERIC_CONCEPT.csv.gz"
@@ -65,9 +60,7 @@ def download_semmeddb_sentence(**kwargs) -> Path:
     return _download_semmeddb_helper(SEMMEDDB_SENTENCE, **kwargs)
 
 
-def _download_semmeddb_helper(
-    url: str, *, api_key: Optional[str] = None, force: bool = False
-) -> Path:
+def _download_semmeddb_helper(url: str, *, api_key: str | None = None, force: bool = False) -> Path:
     path = MODULE.join(SEMMEDDB_VERSION, name=name_from_url(url))
     if path.is_file() and not force:
         return path

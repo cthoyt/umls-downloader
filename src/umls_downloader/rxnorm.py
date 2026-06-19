@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-
 """Download RxNorm content through the UMLS Terminology Services."""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import pystow.utils
 
@@ -17,9 +14,7 @@ __all__ = [
 ]
 
 MODULE = pystow.module("bio", "rxnorm")
-RXNORM_URL_FMT = (
-    "https://download.nlm.nih.gov/umls/kss/rxnorm/RxNorm_full_{version}.zip"
-)
+RXNORM_URL_FMT = "https://download.nlm.nih.gov/umls/kss/rxnorm/RxNorm_full_{version}.zip"
 
 
 def _fix_rxnorm_version(rxnorm_version: str) -> str:
@@ -30,16 +25,17 @@ def _fix_rxnorm_version(rxnorm_version: str) -> str:
 
 
 def download_rxnorm(
-    version: Optional[str] = None, *, api_key: Optional[str] = None, force: bool = False
+    version: str | None = None, *, api_key: str | None = None, force: bool = False
 ) -> Path:
     """Ensure the given version of the RxNorm monthly file.
 
-    :param version: The version of RxNorm to ensure. If not given, is looked up
-        with :mod:`bioversions`.
+    :param version: The version of RxNorm to ensure. If not given, is looked up with
+        :mod:`bioversions`.
     :param api_key: An API key. If not given, is looked up using
         :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
     :param force: Should the file be re-downloaded, even if it already exists?
-    :return: The path of the file for the given version of RxNorm.
+
+    :returns: The path of the file for the given version of RxNorm.
     """
     return download_tgt_versioned(
         url_fmt=RXNORM_URL_FMT,
@@ -52,15 +48,15 @@ def download_rxnorm(
     )
 
 
-def download_rxnorm_prescribable(
-    version: Optional[str] = None, *, force: bool = False
-) -> Path:
+def download_rxnorm_prescribable(version: str | None = None, *, force: bool = False) -> Path:
     """Ensure the given version of the RxNorm prescribable content file.
 
-    :param version: The version of RxNorm to ensure. If not given, is looked up
-        with :mod:`bioversions`.
+    :param version: The version of RxNorm to ensure. If not given, is looked up with
+        :mod:`bioversions`.
     :param force: Should the file be re-downloaded, even if it already exists?
-    :return: The path of the file for the given version of RxNorm.
+
+    :returns: The path of the file for the given version of RxNorm.
+
     :raises RuntimeError: if no version is given and none can be looked up
     """
     if version is None:
