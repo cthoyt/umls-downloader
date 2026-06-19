@@ -37,7 +37,7 @@ parsed_version = re.match(
 version = parsed_version.expand("\g<major>.\g<minor>.\g<patch>")
 
 if parsed_version.group("release"):
-    tags.add("prerelease")
+    tags.add("prerelease")  # noqa:F821
 
 # -- General configuration ---------------------------------------------------
 

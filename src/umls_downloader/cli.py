@@ -31,20 +31,20 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-api_option = click.option(
+api_option: click.Option = click.option(
     "--api-key",
     help="The API key for the UMLS ticket granting system. If not given, uses pystow to load."
     " Get one at https://uts.nlm.nih.gov/uts/edit-profile.",
 )
 
-version_option = click.option(
+version_option: click.Option = click.option(
     "--version",
     help="The version to download. If none specified, looks up the latest with bioversions",
 )
 
 
 @click.group()
-def main():
+def main() -> None:
     """Download files from the UMLS Terminology Service."""
 
 
@@ -57,8 +57,10 @@ def main():
     help="The URL for a file to be downloaded through the UMLS ticket granting system.",
     required=True,
 )
-@click.option("-o", "--output", help="The local file path to download a file to", required=True)
-def custom(url: str, output: str, api_key: Optional[str], force: bool):
+@click.option(
+    "-o", "--output", help="The local file path to download a file to", required=True
+)
+def custom(url: str, output: str, api_key: Optional[str], force: bool) -> None:
     """Download a file via a custom URL."""
     path = Path(output).expanduser().resolve()
     download_tgt(url=url, path=path, api_key=api_key, force=force)
@@ -70,7 +72,7 @@ def custom(url: str, output: str, api_key: Optional[str], force: bool):
 @version_option
 @force_option
 @api_option
-def umls(version: Optional[str], force: bool, api_key: Optional[str]):
+def umls(version: Optional[str], force: bool, api_key: Optional[str]) -> None:
     """Download the UMLS data and print the path to stdout."""
     path = download_umls(api_key=api_key, force=force, version=version)
     click.secho(str(path))
@@ -81,7 +83,7 @@ def umls(version: Optional[str], force: bool, api_key: Optional[str]):
 @version_option
 @force_option
 @api_option
-def rxnorm(version: Optional[str], force: bool, api_key: Optional[str]):
+def rxnorm(version: Optional[str], force: bool, api_key: Optional[str]) -> None:
     """Download the RxNorm data and print the path to stdout."""
     path = download_rxnorm(api_key=api_key, force=force, version=version)
     click.secho(str(path))

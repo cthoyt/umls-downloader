@@ -5,7 +5,8 @@
 import zipfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Generator, BinaryIO
+from pystow.utils import open_zip_reader, open_zipfile, Reader
 
 from .api import download_tgt_versioned
 
@@ -14,18 +15,19 @@ __all__ = [
     "download_umls_full",
     "download_umls_metathesaurus",
     "open_umls",
+    "open_mrconso_reader",
     "open_umls_full",
     "open_umls_semantic_types",
     "open_umls_hierarchy",
 ]
 
-UMLS_URL_FMT = "https://download.nlm.nih.gov/umls/kss/{version}/umls-{version}-mrconso.zip"
+UMLS_URL_FMT = (
+    "https://download.nlm.nih.gov/umls/kss/{version}/umls-{version}-mrconso.zip"
+)
 UMLS_METATHESAURUS_URL_FMT = (
     "https://download.nlm.nih.gov/umls/kss/{version}/umls-{version}-metathesaurus.zip"
 )
-UMLS_METATHESAURUS_FULL_FMT = (
-    "https://download.nlm.nih.gov/umls/kss/{version}/umls-{version}-metathesaurus-full.zip"
-)
+UMLS_METATHESAURUS_FULL_FMT = "https://download.nlm.nih.gov/umls/kss/{version}/umls-{version}-metathesaurus-full.zip"
 
 
 def _download_umls(
@@ -57,7 +59,9 @@ def download_umls(
     :param force: Should the file be re-downloaded, even if it already exists?
     :return: The path of the file for the given version of UMLS.
     """
-    return _download_umls(url_fmt=UMLS_URL_FMT, version=version, api_key=api_key, force=force)
+    return _download_umls(
+        url_fmt=UMLS_URL_FMT, version=version, api_key=api_key, force=force
+    )
 
 
 def download_umls_full(
@@ -73,7 +77,10 @@ def download_umls_full(
     :return: The path of the file for the given version of UMLS.
     """
     return _download_umls(
-        url_fmt=UMLS_METATHESAURUS_FULL_FMT, version=version, api_key=api_key, force=force
+        url_fmt=UMLS_METATHESAURUS_FULL_FMT,
+        version=version,
+        api_key=api_key,
+        force=force,
     )
 
 
@@ -90,12 +97,17 @@ def download_umls_metathesaurus(
     :return: The path of the file for the given version of UMLS.
     """
     return _download_umls(
-        url_fmt=UMLS_METATHESAURUS_URL_FMT, version=version, api_key=api_key, force=force
+        url_fmt=UMLS_METATHESAURUS_URL_FMT,
+        version=version,
+        api_key=api_key,
+        force=force,
     )
 
 
 @contextmanager
-def open_umls(version: Optional[str] = None, *, api_key: Optional[str] = None, force: bool = False):
+def open_mrconso_reader(
+    version: Optional[str] = None, *, api_key: Optional[str] = None, force: bool = False
+) -> Generator[Reader, None, None]:
     """Ensure and open the UMLS MRCONSO.RRF file from the given version.
 
     :param version: The version of UMLS to ensure. If not given, is looked up
@@ -106,20 +118,51 @@ def open_umls(version: Optional[str] = None, *, api_key: Optional[str] = None, f
     :yields: The file, which is used in the context manager.
     """
     path = download_umls(version=version, api_key=api_key, force=force)
+    inner_path = _get_inner_path(path)
+    with open_zip_reader(path, inner_path=inner_path, operation="read") as reader:
+        yield reader
+
+
+@contextmanager
+def open_umls(
+    version: Optional[str] = None, *, api_key: Optional[str] = None, force: bool = False
+) -> Generator[BinaryIO, None, None]:
+    """Ensure and open the UMLS MRCONSO.RRF file from the given version.
+
+    :param version: The version of UMLS to ensure. If not given, is looked up
+        with :mod:`bioversions`.
+    :param api_key: An API key. If not given, is looked up using
+        :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
+    :param force: Should the file be re-downloaded, even if it already exists?
+    :yields: The file, which is used in the context manager.
+    """
+    path = download_umls(version=version, api_key=api_key, force=force)
+    inner_path = _get_inner_path(path)
+    with open_zipfile(
+        path, inner_path, operation="read", representation="binary"
+    ) as file:
+        yield file
+
+
+def _get_inner_path(path: Path) -> str:
     with zipfile.ZipFile(path) as zip_file:
         # In the 2023AB release, they added an intermediate META directory,
         # which means we have to go searching for the file by name
-        for zip_info in zip_file.infolist():
-            if "MRCONSO.RRF" in zip_info.filename:
-                with zip_file.open(zip_info, mode="r") as file:
-                    yield file
-                break
+        return next(
+            zip_info.filename
+            for zip_info in zip_file.infolist()
+            if "MRCONSO.RRF" in zip_info.filename
+        )
 
 
 @contextmanager
 def open_umls_full(
-    name: str, version: Optional[str] = None, *, api_key: Optional[str] = None, force: bool = False
-):
+    name: str,
+    version: Optional[str] = None,
+    *,
+    api_key: Optional[str] = None,
+    force: bool = False,
+) -> Generator[BinaryIO, None, None]:
     """Ensure and open a UMLS file from the given version.
 
     :param name: The name of the file, like ``MRSTY.RRF``
@@ -144,7 +187,7 @@ def open_umls_full(
 @contextmanager
 def open_umls_semantic_types(
     version: Optional[str] = None, *, api_key: Optional[str] = None, force: bool = False
-):
+) -> Generator[BinaryIO, None, None]:
     """Ensure and open a UMLS file from the given version.
 
     :param version: The version of UMLS to ensure. If not given, is looked up
@@ -167,14 +210,16 @@ def open_umls_semantic_types(
 
     .. seealso:: https://www.ncbi.nlm.nih.gov/books/NBK9685/table/ch03.Tf/
     """
-    with open_umls_full(name="MRSTY.RRF", version=version, api_key=api_key, force=force) as file:
+    with open_umls_full(
+        name="MRSTY.RRF", version=version, api_key=api_key, force=force
+    ) as file:
         yield file
 
 
 @contextmanager
 def open_umls_hierarchy(
     version: Optional[str] = None, *, api_key: Optional[str] = None, force: bool = False
-):
+) -> Generator[BinaryIO, None, None]:
     """Ensure and open a UMLS file from the given version.
 
     :param version: The version of UMLS to ensure. If not given, is looked up
@@ -200,5 +245,7 @@ def open_umls_hierarchy(
 
     .. seealso:: https://www.ncbi.nlm.nih.gov/books/NBK9685/table/ch03.T.computable_hierarchies_file_mrhie
     """
-    with open_umls_full(name="MRHIER.RRF", version=version, api_key=api_key, force=force) as file:
+    with open_umls_full(
+        name="MRHIER.RRF", version=version, api_key=api_key, force=force
+    ) as file:
         yield file

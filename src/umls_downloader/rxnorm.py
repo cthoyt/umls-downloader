@@ -15,7 +15,9 @@ __all__ = [
 ]
 
 MODULE = pystow.module("bio", "rxnorm")
-RXNORM_URL_FMT = "https://download.nlm.nih.gov/umls/kss/rxnorm/RxNorm_full_{version}.zip"
+RXNORM_URL_FMT = (
+    "https://download.nlm.nih.gov/umls/kss/rxnorm/RxNorm_full_{version}.zip"
+)
 
 
 def _fix_rxnorm_version(rxnorm_version: str) -> str:
@@ -48,7 +50,9 @@ def download_rxnorm(
     )
 
 
-def download_rxnorm_prescribable(version: Optional[str] = None, *, force: bool = False) -> Path:
+def download_rxnorm_prescribable(
+    version: Optional[str] = None, *, force: bool = False
+) -> Path:
     """Ensure the given version of the RxNorm prescribable content file.
 
     :param version: The version of RxNorm to ensure. If not given, is looked up

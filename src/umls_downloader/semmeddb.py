@@ -22,7 +22,9 @@ __all__ = [
 MODULE = pystow.module("bio", "semmeddb")
 
 SEMMEDDB_VERSION = "43"
-SEMMEDDB_BASE = "https://data.lhncbc.nlm.nih.gov/umls-restricted/ii/tools/SemRep_SemMedDB_SKR"
+SEMMEDDB_BASE = (
+    "https://data.lhncbc.nlm.nih.gov/umls-restricted/ii/tools/SemRep_SemMedDB_SKR"
+)
 SEMMEDDB_CITATIONS = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_CITATIONS.csv.gz"
 SEMMEDDB_ENTITY = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_ENTITY.csv.gz"
 SEMMEDDB_CONCEPT = f"{SEMMEDDB_BASE}/semmedVER43_2021_R_GENERIC_CONCEPT.csv.gz"

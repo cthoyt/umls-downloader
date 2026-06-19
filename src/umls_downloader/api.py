@@ -24,7 +24,11 @@ TGT_URL = "https://utslogin.nlm.nih.gov/cas/v1/api-key"
 
 
 def download_tgt(
-    url: str, path: Union[str, Path], *, api_key: Optional[str] = None, force: bool = False
+    url: str,
+    path: Union[str, Path],
+    *,
+    api_key: Optional[str] = None,
+    force: bool = False,
 ) -> None:
     """Download a file via the UMLS ticket granting system.
 
@@ -42,7 +46,9 @@ def download_tgt(
     if path.is_file() and not force:
         return
 
-    api_key = pystow.get_config("umls", "api_key", passthrough=api_key, raise_on_missing=True)
+    api_key = pystow.get_config(
+        "umls", "api_key", passthrough=api_key, raise_on_missing=True
+    )
 
     # Step 1: get a link to the ticket granting system (TGT)
     auth_res = requests.post(TGT_URL, data={"apikey": api_key})
