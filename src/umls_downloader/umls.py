@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import csv
+import sys
 import zipfile
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import BinaryIO
+from typing import BinaryIO, TextIO
 
-from pystow.utils import Reader, open_zip_reader, open_zipfile
+from pystow.utils import Reader, Representation, open_zip_dict_reader, open_zip_reader, open_zipfile
 
 from .api import download_tgt_versioned
 
@@ -16,6 +18,7 @@ __all__ = [
     "download_umls",
     "download_umls_full",
     "download_umls_metathesaurus",
+    "open_mrconso_dict_reader",
     "open_mrconso_reader",
     "open_umls",
     "open_umls_full",
@@ -122,15 +125,38 @@ def open_mrconso_reader(
     :yields: The file, which is used in the context manager.
     """
     path = download_umls(version=version, api_key=api_key, force=force)
-    inner_path = _get_inner_path(path)
+    inner_path = _find_inner_path(path, "MRCONSO.RRF")
     with open_zip_reader(path, inner_path=inner_path, operation="read") as reader:
         yield reader
 
 
+RRF_COLUMNS = [
+    "CUI",
+    "LAT - Language",
+    "TS - Term Status",
+    "LUI - Local Unique Identifier",
+    "STT - String Type",
+    "SUI - Unique Identifier for String",
+    "ISPREF - is preferred",
+    "AUI - Unique atom identifier",
+    "SAUI - Source atom identifier",
+    "SCUI - Source concept identifier",
+    "SDUI - Source descriptor identifier",
+    "SAB - source name",
+    "TTY - Term Type in Source",
+    "CODE",
+    "STR",
+    "SRL",
+    "SUPPRESS",
+    "CVF",
+    "?",
+]
+
+
 @contextmanager
-def open_umls(
+def open_mrconso_dict_reader(
     version: str | None = None, *, api_key: str | None = None, force: bool = False
-) -> Generator[BinaryIO, None, None]:
+) -> Generator[csv.DictReader[str], None, None]:
     """Ensure and open the UMLS MRCONSO.RRF file from the given version.
 
     :param version: The version of UMLS to ensure. If not given, is looked up with
@@ -142,20 +168,37 @@ def open_umls(
     :yields: The file, which is used in the context manager.
     """
     path = download_umls(version=version, api_key=api_key, force=force)
-    inner_path = _get_inner_path(path)
-    with open_zipfile(path, inner_path, operation="read", representation="binary") as file:
+    inner_path = _find_inner_path(path, "MRCONSO.RRF")
+    old_limit = csv.field_size_limit(sys.maxsize)
+    with open_zip_dict_reader(
+        path, inner_path=inner_path, fieldnames=RRF_COLUMNS, delimiter="|"
+    ) as reader:
+        yield reader
+    csv.field_size_limit(old_limit)
+
+
+@contextmanager
+def open_umls(
+    version: str | None = None,
+    *,
+    api_key: str | None = None,
+    force: bool = False,
+    representation: Representation = "binary",
+) -> Generator[TextIO, None, None] | Generator[BinaryIO, None, None]:
+    """Ensure and open the UMLS MRCONSO.RRF file from the given version.
+
+    :param version: The version of UMLS to ensure. If not given, is looked up with
+        :mod:`bioversions`.
+    :param api_key: An API key. If not given, is looked up using
+        :func:`pystow.get_config` with the ``umls`` module and ``api_key`` key.
+    :param force: Should the file be re-downloaded, even if it already exists?
+
+    :yields: The file, which is used in the context manager.
+    """
+    path = download_umls(version=version, api_key=api_key, force=force)
+    inner_path = _find_inner_path(path, "MRCONSO.RRF")
+    with open_zipfile(path, inner_path, operation="read", representation=representation) as file:
         yield file
-
-
-def _get_inner_path(path: Path) -> str:
-    with zipfile.ZipFile(path) as zip_file:
-        # In the 2023AB release, they added an intermediate META directory,
-        # which means we have to go searching for the file by name
-        return next(
-            zip_info.filename
-            for zip_info in zip_file.infolist()
-            if "MRCONSO.RRF" in zip_info.filename
-        )
 
 
 @contextmanager
@@ -178,18 +221,18 @@ def open_umls_full(
     :yields: The file, which is used in the context manager.
     """
     path = download_umls_full(version=version, api_key=api_key, force=force)
-    with zipfile.ZipFile(path) as zip_file:
-        inner_path = next(
-            zip_info.filename
-            # In the 2023AB release, they added an intermediate META directory,
-            # which means we have to go searching for the file by name
-            for zip_info in zip_file.infolist()
-            if name in zip_info.filename
-        )
-    with open_zipfile(
-        path, inner_path=inner_path, operation="read", representation="binary"
-    ) as file:
+    # In the 2023AB release, they added an intermediate META directory,
+    # which means we have to go searching for the file by name
+    inner_path = _find_inner_path(path, name)
+    with open_zipfile(path, inner_path=inner_path, representation="binary") as file:
         yield file
+
+
+def _find_inner_path(path: Path, name: str) -> str:
+    with zipfile.ZipFile(path) as zip_file:
+        return next(
+            zip_info.filename for zip_info in zip_file.infolist() if name in zip_info.filename
+        )
 
 
 @contextmanager

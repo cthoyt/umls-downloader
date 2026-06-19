@@ -12,9 +12,11 @@ from .semmeddb import (
 )
 from .snomed import download_snomed_international, download_snomed_us
 from .umls import (
+    RRF_COLUMNS,
     download_umls,
     download_umls_full,
     download_umls_metathesaurus,
+    open_mrconso_dict_reader,
     open_mrconso_reader,
     open_umls,
     open_umls_full,
@@ -23,6 +25,7 @@ from .umls import (
 )
 
 __all__ = [
+    "RRF_COLUMNS",
     "download_rxnorm",
     "download_rxnorm_prescribable",
     "download_semmeddb_citations",
@@ -38,6 +41,7 @@ __all__ = [
     "download_umls",
     "download_umls_full",
     "download_umls_metathesaurus",
+    "open_mrconso_dict_reader",
     "open_mrconso_reader",
     "open_umls",
     "open_umls_full",
