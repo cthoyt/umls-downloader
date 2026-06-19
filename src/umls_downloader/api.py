@@ -53,8 +53,13 @@ def download_tgt(
     #  for some reason, this API returns HTML. This needs to be parsed,
     #  and there will be a form whose action is the next thing to POST to
     soup = bs4.BeautifulSoup(auth_res.text, features="html.parser")
-    action_url = soup.find("form").attrs["action"]
+    form_tag = soup.find("form")
+    if not isinstance(form_tag, bs4.element.Tag):
+        raise ValueError(f"form tag is not a bs4 Tag: {form_tag}")
+    action_url = form_tag.attrs["action"]
     logger.info("[umls] got TGT url: %s", action_url)
+    if not isinstance(action_url, str):
+        raise ValueError(f"action url is not a string: {action_url}")
 
     # Step 2: get a service ticket for the file you want to download
     #  by POSTing to the action URL with the name of the URL you actually

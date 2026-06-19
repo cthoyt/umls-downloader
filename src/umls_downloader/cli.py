@@ -33,13 +33,13 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-api_option: click.Option = click.option(
+api_option = click.option(
     "--api-key",
     help="The API key for the UMLS ticket granting system. If not given, uses pystow to load."
     " Get one at https://uts.nlm.nih.gov/uts/edit-profile.",
 )
 
-version_option: click.Option = click.option(
+version_option = click.option(
     "--version",
     help="The version to download. If none specified, looks up the latest with bioversions",
 )

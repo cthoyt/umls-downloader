@@ -55,7 +55,7 @@ dependencies = [
     "more-click",
     "beautifulsoup4",
     "requests",
-    "pystow>=0.8.18",
+    "pystow>=0.8.19",
 ]
 
 # see https://peps.python.org/pep-0735/ and https://docs.astral.sh/uv/concepts/dependencies/#dependency-groups

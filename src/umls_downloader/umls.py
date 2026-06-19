@@ -179,13 +179,17 @@ def open_umls_full(
     """
     path = download_umls_full(version=version, api_key=api_key, force=force)
     with zipfile.ZipFile(path) as zip_file:
-        # In the 2023AB release, they added an intermediate META directory,
-        # which means we have to go searching for the file by name
-        for zip_info in zip_file.infolist():
-            if name in zip_info.filename:
-                with zip_file.open(zip_info, mode="r") as file:
-                    yield file
-                break
+        inner_path = next(
+            zip_info.filename
+            # In the 2023AB release, they added an intermediate META directory,
+            # which means we have to go searching for the file by name
+            for zip_info in zip_file.infolist()
+            if name in zip_info.filename
+        )
+    with open_zipfile(
+        path, inner_path=inner_path, operation="read", representation="binary"
+    ) as file:
+        yield file
 
 
 @contextmanager
